@@ -32,7 +32,7 @@ func (Plugin) MutateConfig(cfg *config.Config) error {
 		SkipRuntime: true,
 	}
 	for _, schemaType := range cfg.Schema.Types {
-		if cfg.Models.Exists(schemaType.Name) {
+		if cfg.Models.UserDefined(schemaType.Name) {
 			continue
 		}
 		if schemaType.Kind != ast.Object && schemaType.Kind != ast.InputObject {
