@@ -3,6 +3,7 @@ package extfieldgen
 import (
 	_ "embed"
 	"go/types"
+	"maps"
 	"strings"
 
 	"github.com/99designs/gqlgen/codegen/config"
@@ -39,7 +40,10 @@ func (Plugin) MutateConfig(cfg *config.Config) error {
 			continue
 		}
 
+		model := cfg.Models[schemaType.Name]
+
 		extraFields := make(map[string]config.ModelExtraField)
+		maps.Copy(extraFields, model.ExtraFields)
 		for _, d := range schemaType.Directives.ForNames("extraField") {
 			t := d.Arguments.ForName("type").Value.Raw
 			if !isBuiltin(t) || !isFullName(t) {
@@ -50,9 +54,9 @@ func (Plugin) MutateConfig(cfg *config.Config) error {
 				Description: d.Arguments.ForName("description").Value.Raw,
 			}
 		}
-		cfg.Models[schemaType.Name] = config.TypeMapEntry{
-			ExtraFields: extraFields,
-		}
+		model.ExtraFields = extraFields
+
+		cfg.Models[schemaType.Name] = model
 	}
 	return nil
 }
