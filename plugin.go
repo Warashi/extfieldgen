@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	_ plugin.Plugin        = (*Plugin)(nil)
-	_ plugin.ConfigMutator = (*Plugin)(nil)
+	_ plugin.Plugin        = Plugin{}
+	_ plugin.ConfigMutator = Plugin{}
 )
 
 type Plugin struct{}
@@ -27,7 +27,7 @@ func (Plugin) Name() string {
 }
 
 // MutateConfig implements plugin.ConfigMutator
-func (*Plugin) MutateConfig(cfg *config.Config) error {
+func (Plugin) MutateConfig(cfg *config.Config) error {
 	cfg.Directives["extraField"] = config.DirectiveConfig{
 		SkipRuntime: true,
 	}
@@ -46,8 +46,8 @@ func (*Plugin) MutateConfig(cfg *config.Config) error {
 				t = makeFullName(cfg, t)
 			}
 			extraFields[d.Arguments.ForName("name").Value.Raw] = config.ModelExtraField{
-				Type:         t,
-				Description:  d.Arguments.ForName("description").Value.Raw,
+				Type:        t,
+				Description: d.Arguments.ForName("description").Value.Raw,
 			}
 		}
 		cfg.Models[schemaType.Name] = config.TypeMapEntry{
