@@ -45,12 +45,8 @@ func (Plugin) MutateConfig(cfg *config.Config) error {
 		extraFields := make(map[string]config.ModelExtraField)
 		maps.Copy(extraFields, model.ExtraFields)
 		for _, d := range schemaType.Directives.ForNames("extraField") {
-			t := d.Arguments.ForName("type").Value.Raw
-			if !isBuiltin(t) || !isFullName(t) {
-				t = makeFullName(cfg, t)
-			}
 			extraFields[d.Arguments.ForName("name").Value.Raw] = config.ModelExtraField{
-				Type:        t,
+				Type:        MakeType(cfg.Model.ImportPath(), d.Arguments.ForName("type").Value.Raw),
 				Description: d.Arguments.ForName("description").Value.Raw,
 			}
 		}
@@ -61,27 +57,34 @@ func (Plugin) MutateConfig(cfg *config.Config) error {
 	return nil
 }
 
-func isBuiltin(t string) bool {
+func MakeType(importPath, t string) string {
+	if !IsBuiltin(t) && !IsFullName(t) {
+		return makeFullName(importPath, t)
+	}
+	return t
+}
+
+func IsBuiltin(t string) bool {
 	switch {
 	case strings.HasPrefix(t, "[]"):
-		return isBuiltin(t[2:])
+		return IsBuiltin(t[2:])
 	case strings.HasPrefix(t, "*"):
-		return isBuiltin(t[1:])
+		return IsBuiltin(t[1:])
 	}
 	return types.Universe.Lookup(t) != nil
 }
 
-func isFullName(t string) bool {
+func IsFullName(t string) bool {
 	return strings.Contains(t, ".")
 }
 
-func makeFullName(cfg *config.Config, t string) string {
+func makeFullName(importPath, t string) string {
 	switch {
 	case strings.HasPrefix(t, "[]"):
-		return "[]" + makeFullName(cfg, t[2:])
+		return "[]" + makeFullName(importPath, t[2:])
 	case strings.HasPrefix(t, "*"):
-		return "*" + makeFullName(cfg, t[1:])
+		return "*" + makeFullName(importPath, t[1:])
 	default:
-		return cfg.Model.ImportPath() + "." + t
+		return importPath + "." + t
 	}
 }
