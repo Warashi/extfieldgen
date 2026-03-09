@@ -3,7 +3,7 @@ module github.com/Warashi/extfieldgen
 go 1.25
 
 require (
-	github.com/99designs/gqlgen v0.17.87
+	github.com/99designs/gqlgen v0.17.88
 	github.com/vektah/gqlparser/v2 v2.5.32
 )
 
